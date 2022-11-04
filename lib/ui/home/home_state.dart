@@ -4,35 +4,36 @@ class HomeState extends Equatable {
   final List<BreedEntity> breeds;
   final LoadStatus fetchInitDataStatus;
   final LoadStatus fetchDogDataStatus;
-  final int selectedIndex;
-  final List<String> imageUrls;
-  final String selectedBreed;
+  final List<int> selectedIndexes;
+  final List<DogEntity> dogs;
 
   const HomeState({
-    this.selectedBreed = "hound",
-    this.imageUrls = const [],
+    this.dogs = const [],
     this.fetchDogDataStatus = LoadStatus.initial,
     this.fetchInitDataStatus = LoadStatus.initial,
     this.breeds = const [],
-    this.selectedIndex = -1,
+    this.selectedIndexes = const [],
   });
 
   @override
-  List<Object?> get props =>
-      [breeds, fetchInitDataStatus, selectedIndex, imageUrls, selectedBreed];
+  List<Object?> get props => [
+        breeds,
+        fetchInitDataStatus,
+        selectedIndexes,
+        dogs,
+      ];
 
   HomeState copyWith(
       {List<BreedEntity>? breeds,
       LoadStatus? fetchInitDataStatus,
       LoadStatus? fetchDogDataStatus,
-      int? selectedIndex,
-      List<String>? imageUrls,
-      String? selectedBreed}) {
+      List<int>? selectedIndexes,
+      List<DogEntity>? dogs,
+      List<String>? selectedBreeds}) {
     return HomeState(
         fetchDogDataStatus: fetchDogDataStatus ?? this.fetchDogDataStatus,
-        selectedBreed: selectedBreed ?? this.selectedBreed,
-        imageUrls: imageUrls ?? this.imageUrls,
-        selectedIndex: selectedIndex ?? this.selectedIndex,
+        dogs: dogs ?? this.dogs,
+        selectedIndexes: selectedIndexes ?? this.selectedIndexes,
         fetchInitDataStatus: fetchInitDataStatus ?? this.fetchInitDataStatus,
         breeds: breeds ?? this.breeds);
   }

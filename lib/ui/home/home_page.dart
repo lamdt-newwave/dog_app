@@ -34,6 +34,7 @@ class _HomeChildPageState extends State<HomeChildPage> {
   late final ScrollController dogImageScrollController;
   late final HomeCubit _cubit;
   final _scrollThreshold = 200.0;
+  bool isLoadMoreRunning = false;
 
   @override
   void initState() {
@@ -43,14 +44,24 @@ class _HomeChildPageState extends State<HomeChildPage> {
     _cubit = context.read<HomeCubit>();
     _cubit.fetchData();
 
-    dogImageScrollController.addListener(() {
-      final maxScroll = dogImageScrollController.position.maxScrollExtent;
-      final currentScroll = dogImageScrollController.position.pixels;
-      if (maxScroll - currentScroll <= _scrollThreshold) {
-        int index = _cubit.state.imageUrls.length;
-        _cubit.loadDogUrls(index + 10);
-      }
-    });
+    dogImageScrollController.addListener(scrollListener);
+  }
+
+  Future<void> scrollListener() async {
+    final maxScroll = dogImageScrollController.position.maxScrollExtent;
+    final currentScroll = dogImageScrollController.position.pixels;
+    if (maxScroll - currentScroll <= _scrollThreshold && !isLoadMoreRunning) {
+      isLoadMoreRunning = true;
+      int index = _cubit.state.dogs.length;
+      await _cubit.loadDogUrls(index + 10, loadMore: true);
+      isLoadMoreRunning = false;
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    dogImageScrollController.removeListener(scrollListener);
   }
 
   @override
@@ -139,10 +150,10 @@ class _HomeChildPageState extends State<HomeChildPage> {
         return ListView.builder(
           controller: dogImageScrollController,
           shrinkWrap: true,
-          itemCount: state.imageUrls.length,
+          itemCount: state.dogs.length,
           scrollDirection: Axis.vertical,
           itemBuilder: (_, index) {
-            final url = state.imageUrls[index];
+            final dog = state.dogs[index];
             return Container(
               margin: const EdgeInsets.only(bottom: 20),
               height: MediaQuery.of(context).size.height * 0.2,
@@ -173,7 +184,7 @@ class _HomeChildPageState extends State<HomeChildPage> {
                       ),
                   placeholder: (context, url) => Lottie.asset(
                       "assets/lotties/lottie_loading_dots_message.json"),
-                  imageUrl: url),
+                  imageUrl: dog.url),
             );
           },
         );
@@ -211,9 +222,12 @@ class _HomeChildPageState extends State<HomeChildPage> {
             itemBuilder: (_, index) {
               final breed = state.breeds[index];
               return BreedWidget(
-                onPressed: () => _cubit.onSelectBreed(index),
+                onPressed: () async {
+                  _cubit.onSelectBreed(index);
+                  scrollController.jumpTo(0);
+                },
                 breed: breed,
-                isSelected: index == state.selectedIndex,
+                isSelected: state.selectedIndexes.contains(index),
               );
             },
           ),

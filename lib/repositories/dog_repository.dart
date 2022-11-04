@@ -1,11 +1,12 @@
 import 'package:dog_app/models/breed_entity.dart';
+import 'package:dog_app/models/dog_entity.dart';
 import 'package:dog_app/models/response_entity.dart';
 import 'package:dog_app/network/api_client.dart';
 
 abstract class DogRepository {
   Future<List<BreedEntity>> getAllBreeds();
 
-  Future<List<String>> getDogUrls(String breedType);
+  Future<List<DogEntity>> getDogs({String breedType});
 }
 
 class DogRepositoryImpl extends DogRepository {
@@ -27,8 +28,11 @@ class DogRepositoryImpl extends DogRepository {
   }
 
   @override
-  Future<List<String>> getDogUrls(String breedType) async {
+  Future<List<DogEntity>> getDogs({String breedType = "hound"}) async {
     final ResponseEntity responseEntity = await apiClient.getDogUrls(breedType);
-    return List.from(responseEntity.message);
+    final List<DogEntity> dogs = List.from(responseEntity.message)
+        .map((e) => DogEntity(breedType: breedType, url: e))
+        .toList();
+    return dogs;
   }
 }
