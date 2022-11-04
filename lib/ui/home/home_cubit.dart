@@ -47,8 +47,12 @@ class HomeCubit extends Cubit<HomeState> {
     loadDogUrls(10, newIndex: breedIndex, isAdding: !isSelected);
   }
 
-  Future<void> loadDogUrls(int count,
-      {bool loadMore = false, int newIndex = -1, bool isAdding = false}) async {
+  Future<void> loadDogUrls(
+    int count, {
+    bool loadMore = false,
+    int newIndex = -1,
+    bool isAdding = false,
+  }) async {
     emit(state.copyWith(fetchDogDataStatus: LoadStatus.loading));
     try {
       List<DogEntity> dogs = [];
@@ -62,27 +66,35 @@ class HomeCubit extends Cubit<HomeState> {
             dogs.addAll(result);
           }
         } else {
-          if (isAdding) {
-            if (state.selectedIndexes.length == 1) {
-              dogs = await dogRepository.getDogs(
-                  breedType: state.breeds[newIndex].name);
-            } else {
+          if (newIndex == -1) {
+            for (int selectedBreedIndex in state.selectedIndexes) {
               final result = await dogRepository.getDogs(
-                  breedType: state.breeds[newIndex].name);
-              dogs.addAll(state.dogs);
+                  breedType: state.breeds[selectedBreedIndex].name);
               dogs.addAll(result);
             }
           } else {
-            state.dogs.removeWhere(
-                (element) => element.breedType == state.breeds[newIndex].name);
-            if (state.dogs.isEmpty) {
-              for (int selectedBreedIndex in state.selectedIndexes) {
+            if (isAdding) {
+              if (state.selectedIndexes.length == 1) {
+                dogs = await dogRepository.getDogs(
+                    breedType: state.breeds[newIndex].name);
+              } else {
                 final result = await dogRepository.getDogs(
-                    breedType: state.breeds[selectedBreedIndex].name);
+                    breedType: state.breeds[newIndex].name);
+                dogs.addAll(state.dogs);
                 dogs.addAll(result);
               }
             } else {
-              dogs = List.from(state.dogs);
+              state.dogs.removeWhere((element) =>
+                  element.breedType == state.breeds[newIndex].name);
+              if (state.dogs.isEmpty) {
+                for (int selectedBreedIndex in state.selectedIndexes) {
+                  final result = await dogRepository.getDogs(
+                      breedType: state.breeds[selectedBreedIndex].name);
+                  dogs.addAll(result);
+                }
+              } else {
+                dogs = List.from(state.dogs);
+              }
             }
           }
           dogs.shuffle(Random());

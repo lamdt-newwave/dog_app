@@ -224,7 +224,7 @@ class _HomeChildPageState extends State<HomeChildPage> {
               return BreedWidget(
                 onPressed: () async {
                   _cubit.onSelectBreed(index);
-                  scrollController.jumpTo(0);
+                  dogImageScrollController.jumpTo(0);
                 },
                 breed: breed,
                 isSelected: state.selectedIndexes.contains(index),
